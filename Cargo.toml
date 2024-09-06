@@ -1,0 +1,69 @@
+[workspace.package]
+description = "A post-quantum signature and encryption tool for the modern world"
+authors = ["Asurar0"]
+readme = "README.md"
+repository = "https://github.com/Asurar0/monero"
+rust-version = "1.80"
+license = "GPL-3.0-Later"
+version = "1.0.0"
+edition = "2021"
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+
+[workspace]
+members = [ 
+	"src/keyring", 
+	"src/lib",
+	"src/core",
+	"src/schemes",
+	"src/tui", 
+	"src/bin"
+]
+
+[workspace.dependencies]
+## ------------------ Workspace members --------------------- ##
+mikomikagi-tui = { path = "./src/tui" }
+mikomikagi-schemes = { path = "./src/schemes" }
+mikomikagi-keyring = { path = "./src/keyring" }
+mikomikagi-core = { path = "./src/core" }
+mikomikagi-lib = { path= "./src/lib" }
+
+## ---------------------- CLI/Parsing ----------------------- ##
+clap = { version = "4.5.16", features = ["unicode", "wrap_help", "cargo"] }
+clap_complete = "4.5.23"
+crossterm = "0.28.1"
+simple_logger = "5.0.0"
+log = "0.4.22"
+time = { version = "*", features = ["formatting"] }
+thiserror = "*"
+
+## ------------------Serialization/Encoding ----------------- ##
+borsh = { version = "*", features = ["derive"] }
+pem = "3.0.4"
+hex = "*"
+base64 = "*"
+bytemuck = { version = "*", features = ["derive"] }
+
+## ------------------------ Database ------------------------ ##
+heed = "0.20.5"
+
+## ---------------------- Cryptography ---------------------- ##
+
+### Post-Quantum schemes
+pqcrypto-kyber = "0.8.1"
+pqcrypto-sphincsplus = "0.7.0"
+pqcrypto-dilithium = "0.5.0"
+pqcrypto-falcon = "0.3.0"
+pqcrypto-traits = "0.3.5"
+
+### Encryption at rest
+argon2 = "*"
+blake3 = { version = "*", default-features = false }
+chacha20poly1305 = "0.10.1"
+aes-gcm = "0.10.3"
+
+### Utils
+zalloc = "0.1.0"
+zeroize = { version = "1.8.1", features = ["zeroize_derive"] }
+rand = "*"

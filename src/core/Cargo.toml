@@ -1,0 +1,12 @@
+[package]
+name = "mikomikagi-core"
+description = "Defines core data structures and primitives used throughout the codebase"
+version = "0.3.0"
+edition = "2021"
+
+[features]
+std = ["blake3/std"]
+
+[dependencies]
+borsh		= { workspace = true }
+blake3		= { workspace = true }

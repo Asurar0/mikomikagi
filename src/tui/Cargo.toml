@@ -1,0 +1,15 @@
+[package]
+name = "mikomikagi-tui"
+description = "Various terminal user interfaces and utilities for mikomikagi"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+mikomikagi-core 	= { workspace = true }
+mikomikagi-schemes 	= { workspace = true }
+mikomikagi-keyring 	= { workspace = true }
+
+crossterm 			= { workspace = true }
+hex 				= { workspace = true }
+time 				= { workspace = true }
+passterm 			= "*"

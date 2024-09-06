@@ -1,0 +1,13 @@
+[package]
+name = "mikomikagi-keyring"
+description = "The keyring is an abstraction over the database that stores all the informations about imported keys and their possible operations"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+mikomikagi-core 	= { workspace = true }
+mikomikagi-schemes 	= { workspace = true }
+
+heed 				= { workspace = true }
+borsh 				= { workspace = true }
+thiserror 			= { workspace = true }

@@ -1,0 +1,24 @@
+[package]
+name = "mikomikagi-schemes"
+description = "This crate encompasses the cryptographic schemes supported by Mikomikagi."
+version = "0.3.0"
+edition = "2021"
+
+[features]
+std = ["blake3/std"]
+
+[dependencies]
+mikomikagi-core			= { workspace = true }
+
+pqcrypto-sphincsplus	= { workspace = true }
+pqcrypto-falcon			= { workspace = true }
+pqcrypto-dilithium		= { workspace = true }
+pqcrypto-traits			= { workspace = true }
+pqcrypto-kyber			= { workspace = true }
+
+blake3 					= { workspace = true }
+aes-gcm 				= { workspace = true }
+chacha20poly1305 		= { workspace = true }
+rand 					= { workspace = true }
+
+thiserror 				= { workspace = true }
