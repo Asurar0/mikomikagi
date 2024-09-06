@@ -4,7 +4,7 @@ authors = ["Asurar0"]
 readme = "README.md"
 repository = "https://github.com/Asurar0/monero"
 rust-version = "1.80"
-license = "GPL-3.0-Later"
+license = "AGPL-3.0-Later"
 version = "1.0.0"
 edition = "2021"
 

@@ -62,4 +62,4 @@ The `tui` crate is a collection of utilities for terminal interfaces.
 
 ## License
 
-This software is distributed under the GNU General Public License v3.0, or later.
+This software is distributed under the MIT License.
