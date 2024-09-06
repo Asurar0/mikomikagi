@@ -43,9 +43,13 @@ This software has not been reviewed or audited by any third-parties. The cryptog
 the PQClean project. Any third-party watching this repository is welcome to reviewing and discuss findings in the 
 Issue section or report vulnerabilities using github security panel. 
 
+## Build
+
+Install latest stable version of Rust toolchain and build with `cargo build --release`.
+
 ## Code structure
 
-The following dependency hierarchy is used in this code:
+The following dependency hierarchy is used in this codebase:
 
 ```
 models -> schemes -> keyring -> lib -> bin
@@ -53,12 +57,12 @@ models -> schemes -> keyring -> lib -> bin
                                        tui
 ```
 
-The `models` crate defines general-purpose structures that are serialized and deserialized between users. These structures are considered standard in the context of Mikomikagi.
-The `schemes` crate defines cryptographic schemes for signature and encryption, along with methods for converting them to and from the `models` structures.
-The `keyring` crate defines the database for storing keys and its API, which includes operations such as insertion, removal, and update.
-The `lib` crate provides typed builders for common operations, including signing, verification, import, and export.
-The `bin` folder contains the actual binary that users are likely to use.
-The `tui` crate is a collection of utilities for terminal interfaces.
+- The `models` crate defines general-purpose structures that are serialized and deserialized between users. These structures are considered standard in the context of Mikomikagi.
+- The `schemes` crate defines cryptographic schemes for signature and encryption, along with methods for converting them to and from the `models` structures.
+- The `keyring` crate defines the database for storing keys and its API, which includes operations such as insertion, removal, and update.
+- The `lib` crate provides typed builders for common operations, including signing, verification, import, and export.
+- The `bin` folder contains the actual binary that users are likely to use.
+- The `tui` crate is a collection of utilities for terminal interfaces.
 
 ## License
 
