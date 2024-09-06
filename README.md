@@ -1,3 +1,5 @@
+![mikomikagi](https://github.com/user-attachments/assets/5837dd70-81ee-468e-93cc-16325a747aea)
+
 Mikomikagi (見込み鍵) is a post-quantum cryptographic tool that provides digital signature and asymmetric encryption. It is designed to 
 serve a similar purpose as GPG, but with a focus on using cryptographic keys as a means of digital identity, rather than being tied 
 to a specific communication paradigm (like E-mail).
@@ -24,6 +26,33 @@ standards.
 * A Trait based design that facilitates easy extension to other databases and schemes
 * A user-friendly interface with support for UTF-8 encoding.
 
+## Usage
+
+```bash
+# Let's generate a new keypair for people to identify you
+$ mikomikagi genkey --interactive
+# You can list all the keys from your keyring
+$ mikomikagi keyring list
+# Alice can import Bob public keys
+$ mikomikagi keyring import -i bob.miko.pub
+# You can also list all the infos about a specific key
+$ mikomikagi keyring info --owner Bob
+# Let's sign a message with Alice private key
+$ echo "Hello, I'm alice" > message
+$ mikomikagi sign --owner Alice -i message -o message.miko.sig
+# Bob can then verify it
+$ mikomikagi verify --owner Alice -i message.miko.sig -s
+# Now Bob want to encrypt a message for alice
+$ echo "Hello Alice, my password is: SuperPassword123"
+$ mikomikagi encrypt --owner Alice -i message -o message.miko.enc
+# Alice can then decrypt it with its private keys
+$ mikomikagi decrypt --owner Alice -i message.miko.enc -s
+# Bob can also export Alice public keys
+$ mikomikagi keyring export --owner Alice -o alice.miko.pub
+# Alice can export its private key for importing it on another system
+$ mikomikagi keyring export --owner Alice -s -o alice.miko.priv
+```
+
 ## Implementation
 
 Digital signature algorithm (DSA):
@@ -45,7 +74,7 @@ Issue section or report vulnerabilities using github security panel.
 
 ## Build
 
-Install latest stable version of Rust toolchain and build with `cargo build --release`.
+Install latest stable version of the Rust toolchain and build mikomikagi with `cargo build --release`.
 
 ## Code structure
 
