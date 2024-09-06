@@ -24,6 +24,7 @@ mikomikagi-lib 		= { workspace = true }
 
 clap 				= { workspace = true }
 clap_complete 		= { workspace = true }
+dirs 				= { workspace = true }
 crossterm 			= { workspace = true }
 simple_logger 		= { workspace = true }
 log 				= { workspace = true }
