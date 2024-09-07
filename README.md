@@ -1,5 +1,8 @@
 ![mikomikagi](https://github.com/user-attachments/assets/5837dd70-81ee-468e-93cc-16325a747aea)
 
+> [!WARNING]
+> Mikomikagi is in testing phase and is not recommended for production use. It is waiting for PQClean project or RustCrypto to deliver FIPS compliant implementations.
+
 Mikomikagi (見込み鍵) is a post-quantum cryptographic tool that provides digital signature and asymmetric encryption. It is designed to 
 serve a similar purpose as GPG, but with a focus on using cryptographic keys as a means of digital identity, rather than being tied 
 to a specific communication paradigm (like E-mail).
