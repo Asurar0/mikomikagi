@@ -58,6 +58,9 @@ pqcrypto-dilithium = "0.5.0"
 pqcrypto-falcon = "0.3.0"
 pqcrypto-traits = "0.3.5"
 
+ml-kem = "0.2.1"
+slh-dsa = "0.1.0"
+
 ### Encryption at rest
 argon2 = "*"
 blake3 = { version = "*", default-features = false }

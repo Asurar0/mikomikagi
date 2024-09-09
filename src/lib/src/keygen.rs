@@ -21,7 +21,7 @@ use std::{ops::{Deref, DerefMut}, time::{Duration, SystemTime, UNIX_EPOCH}};
 
 use mikomikagi_keyring::{error::KeyringError, KeyringWrite};
 use mikomikagi_core::{identity::AttachedIdentity, keys::{DecapsulationKey, EncapsulationKey, Fingerprint, SignaturePrivateKey, SignaturePublicKey}};
-use mikomikagi_schemes::{encryption::{kyber::{Kyber1024, Kyber768}, EncryptionScheme, GenericEncapsulationPublicKey, GenericEncapsulationPrivateKey}, error::Error, signature::{dilithium::{Dilithium3, Dilithium5}, falcon::Falcon1024, sphincs::{SphincsSha2128s, SphincsSha2256s}, GenericSignaturePrivateKey, GenericSignaturePublicKey, SignatureScheme}, utils::EncryptionArguments};
+use mikomikagi_schemes::{encryption::{kyber::{Kyber1024, Kyber768}, EncryptionScheme, GenericEncapsulationPublicKey, GenericEncapsulationPrivateKey}, error::Error, signature::{sphincs::SlhDsaSha2128s, GenericSignaturePrivateKey, GenericSignaturePublicKey, SignatureScheme}, utils::EncryptionArguments};
 
 use crate::{signature::SignatureBuilder, Keyring};
 
@@ -129,12 +129,8 @@ impl<'a> StandaloneKeypairBuilder<'a> {
         };
         
         // Generate signature keypairs
-        let (pk,sk) = (match self.signature_scheme.expect("No signature scheme set in builder") {
-            SphincsSha2128s::SCHEME_CODE => Self::signature_genkey::<SphincsSha2128s>,
-            SphincsSha2256s::SCHEME_CODE => Self::signature_genkey::<SphincsSha2256s>,
-            Dilithium3::SCHEME_CODE => Self::signature_genkey::<Dilithium3>,
-            Dilithium5::SCHEME_CODE => Self::signature_genkey::<Dilithium5>,
-            Falcon1024::SCHEME_CODE => Self::signature_genkey::<Falcon1024>,
+        let (pk,mut sk) = (match self.signature_scheme.expect("No signature scheme set in builder") {
+            SlhDsaSha2128s::SCHEME_CODE => Self::signature_genkey::<SlhDsaSha2128s>,
             _ => panic!("Unknown signature scheme!")
         })(&attached_identity, self.encryption.clone())?;
         
@@ -156,7 +152,7 @@ impl<'a> StandaloneKeypairBuilder<'a> {
         let hash = blake3::hash(&serialized_attached_identity);
         
         // Sign attached identity with private key
-        let signature = SignatureBuilder::new(&sk, self.encryption.as_ref().map(|s|s.key())).sign(hash.as_bytes());
+        let signature = SignatureBuilder::new(&mut sk, self.encryption.as_ref().map(|s|s.key())).sign(hash.as_bytes());
         
         Ok(
             KeygenResult {

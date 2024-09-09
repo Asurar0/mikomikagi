@@ -8,9 +8,9 @@
 
 use mikomikagi_core::keys::{Fingerprint, SignaturePrivateKey, SignaturePublicKey};
 
-use dilithium::{Dilithium5,Dilithium3};
-use falcon::Falcon1024;
-use sphincs::{SphincsSha2128s, SphincsSha2256s};
+//use dilithium::{Dilithium5,Dilithium3};
+//use falcon::Falcon1024;
+use sphincs::SlhDsaSha2128s;
 
 use crate::{error::Error, utils::EncryptionArguments, utils::Parseable};
 
@@ -27,12 +27,13 @@ pub mod falcon;
 
 // ---------------------------------- Definitions --------------------------------------
 
-pub static SIGNATURE_SCHEMES_LIST: [(u32,&str); 5] = [
-    (SphincsSha2128s::SCHEME_CODE,SphincsSha2128s::NAME),
-    (SphincsSha2256s::SCHEME_CODE,SphincsSha2256s::NAME),
-    (Dilithium3::SCHEME_CODE,Dilithium3::NAME),
-    (Dilithium5::SCHEME_CODE,Dilithium5::NAME),
-    (Falcon1024::SCHEME_CODE,Falcon1024::NAME)
+pub static SIGNATURE_SCHEMES_LIST: [(u32,&str); 1] = [
+    (SlhDsaSha2128s::SCHEME_CODE,SlhDsaSha2128s::NAME),
+    // (SphincsSha2128s::SCHEME_CODE,SphincsSha2128s::NAME),
+    // (SphincsSha2256s::SCHEME_CODE,SphincsSha2256s::NAME),
+    // (Dilithium3::SCHEME_CODE,Dilithium3::NAME),
+    // (Dilithium5::SCHEME_CODE,Dilithium5::NAME),
+    // (Falcon1024::SCHEME_CODE,Falcon1024::NAME)
 ];
 
 /// A trait defining signature scheme that can be used as a basis for Mikomikagi identities. 
@@ -47,8 +48,6 @@ pub trait SignatureScheme {
     type PublicKey: GenericSignaturePublicKey;
     /// A compatible private key
     type PrivateKey: GenericSignaturePrivateKey;
-    /// A message and its attached signature
-    type SignedMessage: Parseable;
     /// A detached signature
     type Signature: Parseable;
     /// Error type thrown if verification fail
@@ -56,15 +55,9 @@ pub trait SignatureScheme {
     
     /// Generate a new public/private keypair
     fn keypair() -> (Self::PublicKey,Self::PrivateKey);
-    
-    /// Sign the given message with the supplied private key
-    fn sign(message: &[u8], sk: &Self::PrivateKey) -> Self::SignedMessage;
-    
+
     /// Sign the given message with the supplied private key. Only return the detached signature
-    fn sign_detach(message: &[u8], sk: &Self::PrivateKey) -> Self::Signature;
-    
-    /// Open the signed message only if its signature has been verified.
-    fn open(signed_message: &Self::SignedMessage, pk: &Self::PublicKey) -> Result<Vec<u8>,Self::Error>;
+    fn sign(message: &[u8], sk: &mut Self::PrivateKey) -> Self::Signature;
     
     /// Verify the supplied signature and message with the given public key.
     fn verify(message: &[u8], signature: &Self::Signature, pk: &Self::PublicKey) -> bool;

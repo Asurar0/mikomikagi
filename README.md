@@ -1,5 +1,8 @@
 ![mikomikagi](https://github.com/user-attachments/assets/5837dd70-81ee-468e-93cc-16325a747aea)
 
+> [!IMPORTANT]
+> This branch is implementing FIPS compliant implementations.
+
 > [!WARNING]
 > Mikomikagi is in testing phase and is not recommended for production use. It is waiting for PQClean project or RustCrypto to deliver FIPS compliant implementations.
 

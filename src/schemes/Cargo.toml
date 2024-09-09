@@ -16,6 +16,8 @@ pqcrypto-dilithium		= { workspace = true }
 pqcrypto-traits			= { workspace = true }
 pqcrypto-kyber			= { workspace = true }
 
+slh-dsa					= { workspace = true }
+
 blake3 					= { workspace = true }
 aes-gcm 				= { workspace = true }
 chacha20poly1305 		= { workspace = true }

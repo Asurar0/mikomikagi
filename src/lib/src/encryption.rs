@@ -161,14 +161,14 @@ impl<'dk> DecryptionBuilder<'dk> {
         match algorithm {
             AES256GCM => {
                 let cipher = Aes256Gcm::new_from_slice(key).unwrap();
-                let plaintext = cipher.decrypt(nonce.as_ref().into(), ciphertext.as_ref())
+                let plaintext = cipher.decrypt(&nonce.into(), ciphertext.as_ref())
                     .map_err(|_|Error::DecryptionFailed)?;
                 
                 Ok(plaintext)
             }
             CHACHA20_POLY1305 => {
                 let cipher = ChaCha20Poly1305::new_from_slice(key).unwrap();
-                let plaintext = cipher.decrypt(nonce.as_ref().into(), ciphertext.as_ref())
+                let plaintext = cipher.decrypt(&nonce.into(), ciphertext.as_ref())
                     .map_err(|_|Error::DecryptionFailed)?;
                 
                 Ok(plaintext)
