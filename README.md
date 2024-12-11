@@ -1,13 +1,10 @@
 ![mikomikagi](https://github.com/user-attachments/assets/5837dd70-81ee-468e-93cc-16325a747aea)
 
-> [!IMPORTANT]
-> This branch is implementing FIPS compliant implementations.
-
 > [!WARNING]
-> Mikomikagi is in testing phase and is not recommended for production use. It is waiting for PQClean project or RustCrypto to deliver FIPS compliant implementations.
+> Mikomikagi has not been audited yet by any third-party and is not recommended for production use
 
-Mikomikagi (見込み鍵) is a post-quantum cryptographic tool that provides digital signature and asymmetric encryption. It is designed to 
-serve a similar purpose as GPG, but with a focus on using cryptographic keys as a means of digital identity, rather than being tied 
+Mikomikagi (見込み鍵) is a post-quantum cryptographic tool that provides digital signature and asymmetric encryption. It is designed to
+serve a similar purpose as GPG, but with a focus on using cryptographic keys as a means of digital identity, rather than being tied
 to a specific communication paradigm (like E-mail).
 
 You can use Mikomikagi to:
@@ -17,9 +14,9 @@ You can use Mikomikagi to:
 
 ## Why
 
-This software has initially been written with the objective of improving the cryptographic requirements for spontaneous sensitive communications, 
-particularly in scenarios where vulnerabilities are disclosed through insecure channels (e.g., email, Discord, IRC). Additionally, the 
-goal was to facilitate the integration of various communication methods under a unified public key framework, which is a limitation 
+This software has initially been written with the objective of improving the cryptographic requirements for spontaneous sensitive communications,
+particularly in scenarios where vulnerabilities are disclosed through insecure channels (e.g., email, Discord, IRC). Additionally, the
+goal was to facilitate the integration of various communication methods under a unified public key framework, which is a limitation
 inherent to GPG, which only emphasizes on email addresses. GPG is also very slow (per the RFC process and fair codebase considerations) at adopting new cryptographic
 standards.
 
@@ -62,21 +59,21 @@ $ mikomikagi keyring export --owner Alice -s -o alice.miko.priv
 ## Implementation
 
 Digital signature algorithm (DSA):
-- SPHINCS+SHA2-128s
-- SPHINCS+SHA2-256s
-- Dilithium-3
-- Dilithium-5
-- Falcon1024
+- SLH-DSA-SHA2-128s
+- SLH-DSA-SHA2-256s
+- ML-DSA-44
+- ML-DSA-65
+- ML-DSA-87
 
 Key encapsulation mechanism (KEM):
-- Kyber768
-- Kyber1024
+- ML-KEM-768
+- ML-KEM-1024
 
 ## Security
 
-This software has not been reviewed or audited by any third-parties. The cryptographic implementation comes from 
-the PQClean project. Any third-party watching this repository is welcome to reviewing and discuss findings in the 
-Issue section or report vulnerabilities using github security panel. 
+This software has not been reviewed or audited by any third-parties. The cryptographic implementation comes from
+the PQClean project. Any third-party watching this repository is welcome to reviewing and discuss findings in the
+Issue section or report vulnerabilities using github security panel.
 
 ## Build
 
