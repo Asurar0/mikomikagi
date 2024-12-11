@@ -1,7 +1,7 @@
-//! ### Kyber768 variant
-//! 
+//! ### Dilithium-3 variant
+//!
 //! Current implementation is PQClean library
-//! 
+//!
 
 // ---------------------------------- Imports --------------------------------------
 
@@ -9,132 +9,138 @@ use std::ops::Deref;
 
 use aes_gcm::Aes256Gcm;
 use chacha20poly1305::{ChaCha20Poly1305, KeyInit, aead::{Aead, AeadCore} };
-use mikomikagi_core::keys::{AES256GCM, CHACHA20_POLY1305, EncryptionParameters, DecapsulationKey, EncapsulationKey, Fingerprint};
-use pqcrypto_kyber::kyber768 as kyberctx;
-use pqcrypto_traits::kem::*;
+use mikomikagi_core::keys::{AES256GCM, CHACHA20_POLY1305, EncryptionParameters, Fingerprint, SignaturePrivateKey, SignaturePublicKey};
+use pqcrypto_mldsa::mldsa44 as mldsactx;
+use pqcrypto_traits::sign::*;
 use rand::{rngs::StdRng, SeedableRng};
 
 use crate::{error::{Error, SerializationError}, utils::EncryptionArguments, utils::Parseable};
 
-use super::super::{EncryptionScheme, GenericEncapsulationPublicKey, GenericEncapsulationPrivateKey};
+use super::super::{SignatureScheme, GenericSignaturePublicKey, GenericSignaturePrivateKey};
 
 // ---------------------------------- Defintions --------------------------------------
 
-pub struct Kyber768;
+pub struct MlDsa44;
 
 #[derive(Clone)]
 #[repr(transparent)]
-/// Implementation wrapper over kyberctx::PublicKey
-pub struct EncapsulationKeyWrapper(kyberctx::PublicKey);
+/// Implementation wrapper over mldsactx::PublicKey
+pub struct PublicKey(mldsactx::PublicKey);
 
 #[derive(Clone)]
 #[repr(transparent)]
-/// Implementation wrapper over kyberctx::PublicKey
-pub struct DecapsulationKeyWrapper(kyberctx::SecretKey);
+/// Implementation wrapper over mldsactx::PublicKey
+pub struct PrivateKey(mldsactx::SecretKey);
 
 // ---------------------------------- Implementation --------------------------------------
 
-impl GenericEncapsulationPublicKey for EncapsulationKeyWrapper {    
-    fn serialize(self, pk_fingerprint: Fingerprint) -> Result<EncapsulationKey, Error> {
-        let bytes = <kyberctx::PublicKey as pqcrypto_traits::kem::PublicKey>::as_bytes(&self.0).to_vec();
-        
-        Ok(EncapsulationKey::new(Kyber768::SCHEME_CODE, pk_fingerprint, bytes))
+impl GenericSignaturePublicKey for PublicKey {
+    fn serialize(self, owner_name: &str) -> Result<SignaturePublicKey, Error> {
+        let bytes = <mldsactx::PublicKey as pqcrypto_traits::sign::PublicKey>::as_bytes(&self.0).to_vec();
+
+        let fingerprint = *blake3::keyed_hash(
+            blake3::hash(owner_name.as_bytes())
+                .as_bytes(),
+            &bytes)
+        .as_bytes();
+
+        Ok(SignaturePublicKey::new(MlDsa44::SCHEME_CODE, fingerprint.into(), bytes, None))
     }
 
-    fn deserialize(pk: &EncapsulationKey) -> Result<Self, Error> {
-        <kyberctx::PublicKey as pqcrypto_traits::kem::PublicKey>::from_bytes(&pk.bytes)
-            .map(EncapsulationKeyWrapper)
+    fn deserialize(pk: &SignaturePublicKey) -> Result<Self, Error> {
+        <mldsactx::PublicKey as pqcrypto_traits::sign::PublicKey>::from_bytes(pk.bytes())
+            .map(PublicKey)
             .map_err(|e|Error::SerializationFailed(SerializationError::PQCrypto(e)))
     }
 }
 
-impl GenericEncapsulationPrivateKey for DecapsulationKeyWrapper {
+impl GenericSignaturePrivateKey for PrivateKey {
     fn serialize(
         self,
-        fingerprint: Fingerprint, 
+        fingerprint: Fingerprint,
         encryption: Option<EncryptionArguments>
-    ) -> Result<DecapsulationKey,Error> {
-        
-        let (bytes,encryption): (Vec<u8>,Option<EncryptionParameters>) = 
+    ) -> Result<SignaturePrivateKey,Error> {
+
+        let (bytes,encryption): (Vec<u8>,Option<EncryptionParameters>) =
             if let Some(EncryptionArguments {algorithm,key,salt}) = encryption {
             // Create chacha12 rng for nonce.
             let mut rng = StdRng::from_entropy();
-            
+
             let (enc_sk, nonce): (Vec<u8>,Vec<u8>) = match algorithm {
                 AES256GCM => {
-                    
+
                     assert!(key.len() == 32, "Invariant failed. AES256GCM encryption keys must be 32 bytes. key.len() = {}", key.len());
-                    
-                    let bytes = <kyberctx::SecretKey as pqcrypto_traits::kem::SecretKey>::as_bytes(&self.0);
-                    
+
+                    let bytes = <mldsactx::SecretKey as pqcrypto_traits::sign::SecretKey>::as_bytes(&self.0);
+
                     let nonce = Aes256Gcm::generate_nonce(&mut rng);
                     let cipher = Aes256Gcm::new_from_slice(key).unwrap();
                     let ciphertext = cipher.encrypt(&nonce, bytes).unwrap();
-                    
+
                     (ciphertext,nonce.to_vec())
                 }
                 CHACHA20_POLY1305 => {
-                    
+
                     assert!(key.len() == 32, "Invariant failed. CHACHA20_POLY1305 encryption keys must be 32 bytes. key.len() = {}", key.len());
-                    
-                    let bytes = <kyberctx::SecretKey as pqcrypto_traits::kem::SecretKey>::as_bytes(&self.0);
-                    
+
+                    let bytes = <mldsactx::SecretKey as pqcrypto_traits::sign::SecretKey>::as_bytes(&self.0);
+
                     let nonce = ChaCha20Poly1305::generate_nonce(&mut rng);
                     let cipher = ChaCha20Poly1305::new_from_slice(key).unwrap();
                     let ciphertext = cipher.encrypt(&nonce, bytes).unwrap();
-                    
+
                     (ciphertext,nonce.to_vec())
                 }
                 _ => panic!("Unknown encryption algorithm!")
             };
-            
+
             (enc_sk, Some(EncryptionParameters { salt, algorithm, nonce }))
         } else {
-            (<kyberctx::SecretKey as pqcrypto_traits::kem::SecretKey>::as_bytes(&self.0).to_vec(),None)
+            (<mldsactx::SecretKey as pqcrypto_traits::sign::SecretKey>::as_bytes(&self.0).to_vec(),None)
         };
-        
-        Ok(DecapsulationKey::new(Kyber768::SCHEME_CODE, fingerprint, encryption, bytes))
+
+        Ok(SignaturePrivateKey::new(MlDsa44::SCHEME_CODE, fingerprint, encryption, bytes))
     }
 
-    fn deserialize(dk: &DecapsulationKey, key: Option<&[u8]>) -> Result<Self, Error> {
-        
-        assert!(dk.is_encrypted() == key.is_some(), "Attempted to deserialize an encrypted key without the decryption key");
-        
-        match &dk.encryption {
+    fn deserialize(sk: &SignaturePrivateKey, key: Option<&[u8]>) -> Result<Self, Error> {
+
+        assert!(sk.encryption.is_some() == key.is_some(), "Attempted to deserialize an encrypted key without the decryption key");
+
+        match &sk.encryption {
             None => {
-                let private_key = <kyberctx::SecretKey as pqcrypto_traits::kem::SecretKey>::from_bytes(dk.bytes())
+                let private_key = <mldsactx::SecretKey as pqcrypto_traits::sign::SecretKey>::from_bytes(&sk.bytes)
                     .map_err(|e|Error::SerializationFailed(SerializationError::PQCrypto(e)))?;
-                
+
                 Ok(Self(private_key))
             },
             Some(EncryptionParameters { salt: _, algorithm, nonce }) => {
-                
+
                 let key = key.unwrap();
                 match *algorithm {
                     AES256GCM => {
-                        
+
                         assert!(key.len() == 32, "Invariant failed. AES256GCM encryption keys must be 32 bytes. key.len() = {}", key.len());
-                        
+
                         let nonce: [u8;12] = nonce.clone().try_into().unwrap();
                         let cipher = Aes256Gcm::new_from_slice(key).unwrap();
-                        let plaintext = cipher.decrypt(&nonce.into(), dk.bytes()).map_err(|_|Error::DecryptionFailed)?;
-                        
-                        let private_key = <kyberctx::SecretKey as pqcrypto_traits::kem::SecretKey>::from_bytes(&plaintext)
+                        let plaintext = cipher.decrypt(&nonce.into(), sk.bytes.as_ref()).map_err(|_|Error::DecryptionFailed)?;
+
+                        let private_key = <mldsactx::SecretKey as pqcrypto_traits::sign::SecretKey>::from_bytes(&plaintext)
                             .map_err(|e|Error::SerializationFailed(SerializationError::PQCrypto(e)))?;
-                        
+
                         Ok(Self(private_key))
                     },
                     CHACHA20_POLY1305 => {
-                        
+
                         assert!(key.len() == 32, "Invariant failed. CHACHA20_POLY1305 encryption keys must be 32 bytes. key.len() = {}", key.len());
-                        
+
                         let nonce: [u8;12] = nonce.clone().try_into().unwrap();
                         let cipher = ChaCha20Poly1305::new_from_slice(key).unwrap();
-                        let plaintext = cipher.decrypt(&nonce.into(), dk.bytes()).map_err(|_|Error::DecryptionFailed)?;
-                        
-                        let private_key = <kyberctx::SecretKey as pqcrypto_traits::kem::SecretKey>::from_bytes(&plaintext)
+                        let plaintext = cipher.decrypt(&nonce.into(), sk.bytes.as_ref()).map_err(|_|Error::DecryptionFailed)?;
+
+                        let private_key = <mldsactx::SecretKey as pqcrypto_traits::sign::SecretKey>::from_bytes(&plaintext)
                             .map_err(|e|Error::SerializationFailed(SerializationError::PQCrypto(e)))?;
-                        
+
                         Ok(Self(private_key))
                     }
                     _ => panic!("Unknown encryption algorithm")
@@ -144,71 +150,69 @@ impl GenericEncapsulationPrivateKey for DecapsulationKeyWrapper {
     }
 }
 
-impl EncryptionScheme for Kyber768 {
-    
-    const NAME: &'static str = "Kyber-768";
-    
-    const SCHEME_CODE: u32 = 0;
+impl SignatureScheme for MlDsa44 {
 
-    type EncapsulationKey = EncapsulationKeyWrapper;
+    const NAME: &'static str = "ML-DSA-44";
 
-    type DecapsulationKey = DecapsulationKeyWrapper;
+    const SCHEME_CODE: u32 = 2;
 
-    type Ciphertext = kyberctx::Ciphertext;
+    type PublicKey = PublicKey;
 
-    type SharedSecret = kyberctx::SharedSecret;
-    
+    type PrivateKey = PrivateKey;
+
+    type Signature = mldsactx::DetachedSignature;
+
     type Error = Error;
 
-    fn keypair() -> (Self::EncapsulationKey,Self::DecapsulationKey) {
-        let (pk,sk) = kyberctx::keypair();
-        
-        (EncapsulationKeyWrapper(pk),DecapsulationKeyWrapper(sk))
+    fn keypair() -> (Self::PublicKey, Self::PrivateKey) {
+        let (pk,sk) = mldsactx::keypair();
+
+        (PublicKey(pk),PrivateKey(sk))
     }
 
-    fn encapsulate(pk: &Self::EncapsulationKey) -> (Self::SharedSecret,Self::Ciphertext) {
-        kyberctx::encapsulate(pk)
+    fn sign(message: &[u8], sk: &mut Self::PrivateKey) -> Self::Signature {
+        mldsactx::detached_sign(message, sk)
     }
 
-    fn decapsulate(ciphertext: &Self::Ciphertext, sk: &Self::DecapsulationKey) -> Self::SharedSecret {
-        kyberctx::decapsulate(ciphertext, sk)
+    fn verify(message: &[u8], signature: &Self::Signature, pk: &Self::PublicKey) -> bool {
+        mldsactx::verify_detached_signature(signature, message, pk).is_ok()
     }
 }
 
-impl Deref for EncapsulationKeyWrapper {
-    type Target = kyberctx::PublicKey;
+impl Deref for PublicKey {
+    type Target = mldsactx::PublicKey;
 
     fn deref(&self) -> &Self::Target {
         &self.0
     }
 }
 
-impl Deref for DecapsulationKeyWrapper {
-    type Target = kyberctx::SecretKey;
+impl Deref for PrivateKey {
+    type Target = mldsactx::SecretKey;
 
     fn deref(&self) -> &Self::Target {
         &self.0
     }
 }
 
-impl Parseable for kyberctx::SharedSecret {
+impl Parseable for mldsactx::SignedMessage {
     fn to_bytes(&self) -> Vec<u8> {
         self.as_bytes().to_vec()
     }
 
     fn from_bytes(bytes: &[u8]) -> Result<Self,Error> {
-        <Self as SharedSecret>::from_bytes(bytes)
+        <Self as SignedMessage>::from_bytes(bytes)
             .map_err(|e|Error::SerializationFailed(SerializationError::PQCrypto(e)))
     }
 }
 
-impl Parseable for kyberctx::Ciphertext {
+impl Parseable for mldsactx::DetachedSignature {
     fn to_bytes(&self) -> Vec<u8> {
         self.as_bytes().to_vec()
     }
 
     fn from_bytes(bytes: &[u8]) -> Result<Self,Error> {
-        <Self as Ciphertext>::from_bytes(bytes)
+        <Self as DetachedSignature>::from_bytes(bytes)
             .map_err(|e|Error::SerializationFailed(SerializationError::PQCrypto(e)))
     }
 }

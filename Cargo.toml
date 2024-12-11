@@ -12,13 +12,14 @@ edition = "2021"
 unsafe_code = "forbid"
 
 [workspace]
-members = [ 
-	"src/keyring", 
-	"src/lib",
-	"src/core",
-	"src/schemes",
-	"src/tui", 
-	"src/bin"
+resolver = "2"
+members = [
+    "src/keyring",
+    "src/lib",
+    "src/core",
+    "src/schemes",
+    "src/tui",
+    "src/bin",
 ]
 
 [workspace.dependencies]
@@ -27,7 +28,7 @@ mikomikagi-tui = { path = "./src/tui" }
 mikomikagi-schemes = { path = "./src/schemes" }
 mikomikagi-keyring = { path = "./src/keyring" }
 mikomikagi-core = { path = "./src/core" }
-mikomikagi-lib = { path= "./src/lib" }
+mikomikagi-lib = { path = "./src/lib" }
 
 ## ---------------------- CLI/Parsing ----------------------- ##
 clap = { version = "4.5.16", features = ["unicode", "wrap_help", "cargo"] }
@@ -52,13 +53,11 @@ heed = "0.20.5"
 ## ---------------------- Cryptography ---------------------- ##
 
 ### Post-Quantum schemes
-pqcrypto-kyber = "0.8.1"
-pqcrypto-sphincsplus = "0.7.0"
-pqcrypto-dilithium = "0.5.0"
 pqcrypto-falcon = "0.3.0"
+pqcrypto-mlkem = "0.1.0"
+pqcrypto-mldsa = "0.1.0"
+pqcrypto-sphincsplus = "0.7.0"
 pqcrypto-traits = "0.3.5"
-
-ml-kem = "0.2.1"
 slh-dsa = "0.1.0"
 
 ### Encryption at rest
