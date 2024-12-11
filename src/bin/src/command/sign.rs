@@ -65,10 +65,10 @@ fn sign<
 ) -> Result<String,KeyringError> {
     
     // Get private key
-    let (private_key,key) = fetch_signature_private_key(keyring, fingerprint).unwrap();
+    let (mut private_key,key) = fetch_signature_private_key(keyring, fingerprint).unwrap();
     
     // Make a signature builder and sign the message
-    let builder = SignatureBuilder::new(&private_key, key.as_ref().map(|s| s.as_ref()));
+    let mut builder = SignatureBuilder::new(&mut private_key, key.as_ref().map(|s| s.as_ref()));
     let signed_message = builder.sign_block(&message);
     
     // PEM encode it

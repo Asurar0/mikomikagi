@@ -1,8 +1,11 @@
+/// Implementation of ML-DSA-87 variant
+mod mldsa87;
+pub use mldsa87::MlDsa87;
 
-/// Implementation of Dilithium-5 variant
-mod dilithium5;
-pub use dilithium5::Dilithium5;
+/// Implementation of ML-DSA-65 variant
+mod mldsa65;
+pub use mldsa65::MlDsa65;
 
-/// Implementation of Dilithium-3 variant
-mod dilithium3;
-pub use dilithium3::Dilithium3;
+/// Implementation of ML-DSA-44 variant
+mod mldsa44;
+pub use mldsa44::MlDsa44;

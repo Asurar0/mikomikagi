@@ -36,5 +36,8 @@ pub enum Error {
 pub enum SerializationError {
     
     #[error("PQCrypto library failed to serialize the incoming the data")]
-    PQCrypto(pqcrypto_traits::Error)
+    PQCrypto(pqcrypto_traits::Error),
+    
+    #[error("RustCrypto crate failed to serialize the incoming data")]
+    RustCrypto
 }

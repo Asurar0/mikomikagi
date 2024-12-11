@@ -76,11 +76,11 @@ pub fn export_private_key<KR: KeyringWrite>(keyring: &Keyring<KR>, fingerprint: 
     let fingerprint = select_fingerprint(keyring, fingerprint, owner).unwrap();
     
     // Get private key and decapsulation key
-    let (private_key,key) = fetch_signature_private_key(keyring, fingerprint).unwrap();
+    let (mut private_key,key) = fetch_signature_private_key(keyring, fingerprint).unwrap();
     let decapsulation_key = keyring.get_encryption_private_key(&fingerprint).unwrap();
     
     // Generate signature for private key and decapsulation key
-    let (signature,decapsulation_key) = generate_private_key_signature((&private_key,key), decapsulation_key);
+    let (signature,decapsulation_key) = generate_private_key_signature((&mut private_key,key), decapsulation_key);
     
     // Generate exported public key block and encode it
     let exported_block = PrivateKeyBlock {
@@ -96,26 +96,26 @@ pub fn export_private_key<KR: KeyringWrite>(keyring: &Keyring<KR>, fingerprint: 
 pub fn export_encryption_public_key<KR: KeyringWrite>(keyring: &Keyring<KR>, encapsulation_key: EncapsulationKey) -> EncapsulationKeyBlock {
     
     // Fetch signature private key
-    let (sk,key) = fetch_signature_private_key(keyring, encapsulation_key.fingerprint()).unwrap();
+    let (mut sk,key) = fetch_signature_private_key(keyring, encapsulation_key.fingerprint()).unwrap();
     
     // Sign encapsulation key
     let ek_blob = borsh::to_vec(&encapsulation_key).unwrap();
     let hash = blake3::hash(&ek_blob);
-    let ek_hash_signature = SignatureBuilder::new(&sk, key.as_ref().map(|s| s.as_ref())).sign(hash.as_bytes());
+    let ek_hash_signature = SignatureBuilder::new(&mut sk, key.as_ref().map(|s| s.as_ref())).sign(hash.as_bytes());
     
     EncapsulationKeyBlock { encapsulation_key, ek_hash_signature }
 }
 
-pub fn generate_private_key_signature((sk,key): (&SignaturePrivateKey,Option<[u8;32]>), decapsulation_key: Option<DecapsulationKey>) -> (Vec<u8>,Option<DecapsulationKeyBlock>)
+pub fn generate_private_key_signature((mut sk,key): (&mut SignaturePrivateKey,Option<[u8;32]>), decapsulation_key: Option<DecapsulationKey>) -> (Vec<u8>,Option<DecapsulationKeyBlock>)
 {    
     let sk_blob = borsh::to_vec(sk).unwrap();
     let hash = blake3::hash(&sk_blob);
-    let sk_sig = SignatureBuilder::new(&sk, key.as_ref().map(|s| s.as_ref())).sign(hash.as_bytes());
+    let sk_sig = SignatureBuilder::new(&mut sk, key.as_ref().map(|s| s.as_ref())).sign(hash.as_bytes());
     
     let dk_block = if let Some(decapsulation_key) = decapsulation_key {
         let dk_blob = borsh::to_vec(&decapsulation_key).unwrap();
         let hash = blake3::hash(&dk_blob);
-        let signature = SignatureBuilder::new(&sk, key.as_ref().map(|s| s.as_ref())).sign(hash.as_bytes());
+        let signature = SignatureBuilder::new(&mut sk, key.as_ref().map(|s| s.as_ref())).sign(hash.as_bytes());
         
         Some(DecapsulationKeyBlock { decapsulation_key, signature })
     } else {
