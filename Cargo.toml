@@ -8,6 +8,18 @@ license = "MIT"
 version = "1.0.0"
 edition = "2021"
 
+[profile.release]
+panic         = "abort" 
+lto           = true   
+strip         = "none" 
+codegen-units = 1      
+opt-level     = 3
+
+[profile.dev]
+lto           = false
+strip         = "none"
+opt-level     = 1
+
 [workspace.lints.rust]
 unsafe_code = "forbid"
 
