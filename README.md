@@ -3,6 +3,9 @@
 > [!WARNING]
 > Mikomikagi has not been audited yet by any third-party and is not recommended for production use
 
+> [!IMPORTANT]
+> A roadmap will appear soon. I'm also waiting on a quote for auditing the core libraries.
+
 Mikomikagi (見込み鍵) is a post-quantum cryptographic tool that provides digital signature and asymmetric encryption. It is designed to
 serve a similar purpose as GPG, but with a focus on using cryptographic keys as a means of digital identity, rather than being tied
 to a specific communication paradigm (like E-mail).
